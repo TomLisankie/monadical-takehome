@@ -38,7 +38,8 @@ class Board extends React.Component {
         }
         this.state = {
             spaces : spaces,
-            xTurn : true
+            xTurn : true,
+            filled : Array(BOARD_SIZE).fill(false)
         };
     }
 
@@ -50,14 +51,59 @@ class Board extends React.Component {
         return <MoveChoiceButton side={side} row={row} onClick={() => this.handleClick(side, row)} />;
     }
 
+    newRow(row, rowArray, side, playerLetter) {
+        let newRow = [playerLetter];
+
+        if (side === "left") {
+            // find index of empty space to leave out
+            let indexToLeave = 0;
+            while (rowArray[indexToLeave] != "___") {
+                indexToLeave += 1;
+                if (indexToLeave == BOARD_SIZE) {
+                    let filled = this.state.filled;
+                    filled[row] = true;
+                    this.setState({filled : filled});
+                    return rowArray;
+                }
+            }
+            // shift off all elements of old array into new array except one marked to leave out
+            for (let i = 0; i < rowArray.length; i++) {
+                let piece = rowArray[i];
+                if (i != indexToLeave) {
+                    newRow.push(piece);
+                }
+            }
+        } else {
+            let indexToLeave = BOARD_SIZE - 1;
+            while (rowArray[indexToLeave] != "___") {
+                indexToLeave -= 1;
+                if (indexToLeave < 0) {
+                    let filled = this.state.filled;
+                    filled[row] = true;
+                    this.setState({filled : filled});
+                    return rowArray;
+                }
+            }
+            for (let i = BOARD_SIZE - 1; i >= 0; i--) {
+                console.log(i);
+                let piece = rowArray.pop();
+                if (i != indexToLeave) {
+                    console.log("Unshift");
+                    newRow.unshift(piece);
+                }
+            }
+        }
+
+        return newRow;
+    }
+
     handleClick(side, row) {
+        if (this.state.filled[row]) {
+            return
+        }
         let spaces = this.state.spaces.slice();
         let xTurn = this.state.xTurn;
-        if (side === "left") {
-            spaces[row][0] = xTurn ? "X" : "O";
-        } else {
-            spaces[row][BOARD_SIZE - 1] = xTurn ? "X" : "O";
-        }
+        spaces[row] = this.newRow(row, spaces[row].slice(), side, xTurn ? "X" : "O");
         this.setState(
             {
                 spaces : spaces,
