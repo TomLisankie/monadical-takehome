@@ -39,7 +39,8 @@ class Board extends React.Component {
         this.state = {
             spaces : spaces,
             xTurn : true,
-            filled : Array(BOARD_SIZE).fill(false)
+            filled : Array(BOARD_SIZE).fill(false),
+            winner : null
         };
     }
 
@@ -85,10 +86,8 @@ class Board extends React.Component {
                 }
             }
             for (let i = BOARD_SIZE - 1; i >= 0; i--) {
-                console.log(i);
                 let piece = rowArray.pop();
                 if (i != indexToLeave) {
-                    console.log("Unshift");
                     newRow.unshift(piece);
                 }
             }
@@ -97,8 +96,51 @@ class Board extends React.Component {
         return newRow;
     }
 
+    checkForHorizontalWin(spaces) {
+        for (let row = 0; row < BOARD_SIZE; row++) {
+            let startColumn = 0;
+            let endColumn = 4;
+            while (endColumn != BOARD_SIZE) {
+                let slice = spaces[row].slice(startColumn, endColumn);
+                let set = new Set(slice)
+                if (set.size == 1 && set.values().next().value != "___") {
+                    return set.values().next().value;
+                }
+                startColumn += 1;
+                endColumn += 1;
+            }
+        }
+        return null;
+    }
+
+    checkForVerticalWin(spaces) {}
+
+    checkForDiagonalWin(spaces) {}
+
+    checkForWin(spaces) {
+        // let winFuncs = [this.checkForHorizontalWin, this.checkForVerticalWin, this.checkForDiagonalWin];
+        let h = this.checkForHorizontalWin(spaces);
+        let v = this.checkForVerticalWin(spaces);
+        let d = this.checkForDiagonalWin(spaces);
+        if (h) {
+            return h;
+        } else if (v) {
+            return v;
+        } else if (d) {
+            return d;
+        }
+        // for (const func of winFuncs) {
+        //     let winner = func();
+        //     if (winner) {
+        //         this.setState({winner : winner});
+        //         return winner;
+        //     }
+        // }
+        return null;
+    }
+
     handleClick(side, row) {
-        if (this.state.filled[row]) {
+        if (this.state.filled[row] || this.state.winner) {
             return
         }
         let spaces = this.state.spaces.slice();
@@ -107,7 +149,8 @@ class Board extends React.Component {
         this.setState(
             {
                 spaces : spaces,
-                xTurn : !xTurn
+                xTurn : !xTurn,
+                winner : this.checkForWin(spaces)
             });
     }
 
@@ -116,6 +159,7 @@ class Board extends React.Component {
             <div className="game-board">
                 <h1 className="game-title"> Topsy Turvy </h1>
                 <h2 className="status"> <i>{this.state.xTurn ? "Your turn" : "Other turn"}</i> </h2>
+                <h3> Winner: {this.state.winner ? this.state.winner : ""} </h3>
                 <div className="board-row">
                     {this.renderMoveChoiceButton("left", 0)}
                     {this.renderPieceSpace(0, 0)}
