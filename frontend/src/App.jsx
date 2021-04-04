@@ -113,7 +113,22 @@ class Board extends React.Component {
         return null;
     }
 
-    checkForVerticalWin(spaces) {}
+    checkForVerticalWin(spaces) {
+        let rows = [0, 1, 2, 3];
+        while (rows[rows.length - 1] != BOARD_SIZE) {
+            for (let column = 0; column < BOARD_SIZE; column++) {
+                console.log(rows);
+                let set = new Set([spaces[rows[0]][column], spaces[rows[1]][column], spaces[rows[2]][column], spaces[rows[3]][column]]);
+                if (set.size == 1 && set.values().next().value != "___") {
+                    return set.values().next().value;
+                }
+            }
+            for (let i = 0; i < rows.length; i++) {
+                rows[i] += 1;
+            }
+        }
+        return null;
+    }
 
     checkForDiagonalWin(spaces) {}
 
