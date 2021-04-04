@@ -117,7 +117,6 @@ class Board extends React.Component {
         let rows = [0, 1, 2, 3];
         while (rows[rows.length - 1] != BOARD_SIZE) {
             for (let column = 0; column < BOARD_SIZE; column++) {
-                console.log(rows);
                 let set = new Set([spaces[rows[0]][column], spaces[rows[1]][column], spaces[rows[2]][column], spaces[rows[3]][column]]);
                 if (set.size == 1 && set.values().next().value != "___") {
                     return set.values().next().value;
@@ -130,27 +129,54 @@ class Board extends React.Component {
         return null;
     }
 
-    checkForDiagonalWin(spaces) {}
+    checkForDiagonalWin(spaces) {
+        function checkForLeftDiagonal(spaces) {
+            let positions = [[0,0], [1,1], [2,2], [3,3]];
+            while (positions[positions.length - 1][0] != BOARD_SIZE) {
+                for (let column = 0; column < BOARD_SIZE; column++) {
+                    let set = new Set([spaces[positions[0][0]][positions[0][1]], spaces[positions[1][0]][positions[1][1]], spaces[positions[2][0]][positions[2][1]], spaces[positions[3][0]][positions[3][1]]]);
+                    if (set.size == 1 && set.values().next().value != "___") {
+                        return set.values().next().value;
+                    }
+                }
+                for (let i = 0; i < positions.length; i++) {
+                    positions[i][0] += 1;
+                    positions[i][1] += 1;
+                }
+            }
+            return null;
+        }
+        function checkForRightDiagonal(spaces) {
+            let positions = [[BOARD_SIZE - 1,0], [BOARD_SIZE - 2,1], [BOARD_SIZE - 3,2], [BOARD_SIZE - 4,3]];
+            while (positions[positions.length - 1][0] != -1) {
+                for (let column = BOARD_SIZE - 1; column > 0; column--) {
+                    let set = new Set([spaces[positions[0][0]][positions[0][1]], spaces[positions[1][0]][positions[1][1]], spaces[positions[2][0]][positions[2][1]], spaces[positions[3][0]][positions[3][1]]]);
+                    if (set.size == 1 && set.values().next().value != "___") {
+                        return set.values().next().value;
+                    }
+                }
+                for (let i = 0; i < positions.length; i++) {
+                    positions[i][0] -= 1;
+                    positions[i][1] -= 1;
+                }
+            }
+            return null;
+        }
+        let possibleDiagonals = [checkForLeftDiagonal(spaces), checkForRightDiagonal(spaces)];
+        for (let possibleWin of possibleDiagonals) {
+            if (possibleWin) {
+                return possibleWin;
+            }
+        }
+    }
 
     checkForWin(spaces) {
-        // let winFuncs = [this.checkForHorizontalWin, this.checkForVerticalWin, this.checkForDiagonalWin];
-        let h = this.checkForHorizontalWin(spaces);
-        let v = this.checkForVerticalWin(spaces);
-        let d = this.checkForDiagonalWin(spaces);
-        if (h) {
-            return h;
-        } else if (v) {
-            return v;
-        } else if (d) {
-            return d;
+        let possibleWins = [this.checkForHorizontalWin(spaces), this.checkForVerticalWin(spaces), this.checkForDiagonalWin(spaces)];
+        for (let possibleWin of possibleWins) {
+            if (possibleWin) {
+                return possibleWin;
+            }
         }
-        // for (const func of winFuncs) {
-        //     let winner = func();
-        //     if (winner) {
-        //         this.setState({winner : winner});
-        //         return winner;
-        //     }
-        // }
         return null;
     }
 
