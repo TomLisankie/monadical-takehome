@@ -100,7 +100,7 @@ class Board extends React.Component {
         for (let row = 0; row < BOARD_SIZE; row++) {
             let startColumn = 0;
             let endColumn = 4;
-            while (endColumn != BOARD_SIZE) {
+            while (endColumn != BOARD_SIZE + 1) {
                 let slice = spaces[row].slice(startColumn, endColumn);
                 let set = new Set(slice)
                 if (set.size == 1 && set.values().next().value != "___") {
