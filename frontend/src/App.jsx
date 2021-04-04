@@ -19,7 +19,7 @@ class MoveChoiceButton extends React.Component {
     render() {
         return (
             <div className="move-choice-button" onClick={this.props.onClick}>
-                {this.props.side == "left" ? "➡️" : "⬅️"}
+                {this.props.side === "left" ? "➡️" : "⬅️"}
             </div>
         );
     }
@@ -37,7 +37,8 @@ class Board extends React.Component {
             spaces.push(row);
         }
         this.state = {
-            spaces : spaces
+            spaces : spaces,
+            xTurn : true
         };
     }
 
@@ -51,19 +52,24 @@ class Board extends React.Component {
 
     handleClick(side, row) {
         let spaces = this.state.spaces.slice();
-        if (side == "left") {
-            spaces[row][0] = "X";
+        let xTurn = this.state.xTurn;
+        if (side === "left") {
+            spaces[row][0] = xTurn ? "X" : "O";
         } else {
-            spaces[row][BOARD_SIZE - 1] = "X";
+            spaces[row][BOARD_SIZE - 1] = xTurn ? "X" : "O";
         }
-        this.setState({spaces : spaces});
+        this.setState(
+            {
+                spaces : spaces,
+                xTurn : !xTurn
+            });
     }
 
     render() {
         return (
             <div className="game-board">
                 <h1 className="game-title"> Topsy Turvy </h1>
-                <h2 className="status"> <i>Your turn</i> </h2>
+                <h2 className="status"> <i>{this.state.xTurn ? "Your turn" : "Other turn"}</i> </h2>
                 <div className="board-row">
                     {this.renderMoveChoiceButton("left", 0)}
                     {this.renderPieceSpace(0, 0)}
