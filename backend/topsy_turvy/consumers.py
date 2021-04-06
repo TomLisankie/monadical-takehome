@@ -1,35 +1,79 @@
 import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
+from .game_logic import check_for_win
 
 class GameConsumer(WebsocketConsumer):
-    x = 0
+    board = None
+    turn = None
+    player_id = None
+    piece = None
+    won = False
+    game_id = None
+
     def connect(self):
-        game_id = self.scope["url_route"]["kwargs"]["game_id"]
-        self.game_group_name = "group_" + game_id
+        self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
+        print(type(self.channel_layer))
+        self.game_group_name = "group_" + self.game_id
 
         async_to_sync(self.channel_layer.group_add)(self.game_group_name, self.channel_name)
 
         self.accept()
 
+    def check_for_none_piece():
+        if self.piece == None: # Whichever player goes first is player X
+            self.piece = "X"
+            self.turn = False # False means it is the turn of the O piece
+
+    def check_for_legitimate_change():
+        # All of these if statements are here to keep it so only the player who's turn it is can update the board
+        if self.piece != None and self.piece != self.turn:
+            return False
+
+        if (self.piece == "X" and self.turn == False) or (self.piece == "O" and self.turn == True):
+            return
+        elif self.piece == "X" and self.turn == True:
+            self.turn = False
+        elif self.piece == "O" and self.turn == False:
+            self.turn = True
+
+    def handle_possible_win():
+        if check_for_win(self.board.copy()):
+            current_game = Game.objects.get(uuid=self.game_id)
+            current_game.won = True
+            current_game.winner = self.player_id
+            async_to_sync(self.channel_layer.group_send)(
+                self.game_group_name,
+                {
+                    "type" : "game_won",
+                    "winner" : str(player_id)
+                }
+            )
+
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        self.x += 1
-        self.send(text_data=json.dumps(text_data_json))
+        self.check_for_none_piece()
+        if not self.check_for_legitimate_change():
+            return
+
+        self.board = text_data_json["updated_board"]
         async_to_sync(self.channel_layer.group_send)(
             self.game_group_name,
             {
-                "type" : "game_board_update",
-                "updated_board" : [["x"]]
+                "type" : "game_state_update",
+                "updated_board" : self.board,
+                "updated_turn" : self.turn
             }
         )
 
-    def game_board_update(self, event):
-        updated_board = event["updated_board"]
-        updated_board.append(["x"])
-        print(updated_board)
+        self.handle_possible_win()
 
-        self.send(text_data=json.dumps(updated_board))
+    def game_state_update(self, event):
+        self.board = event["updated_board"]
+        self.turn = event["updated_turn"]
+        if self.piece == None:
+            self.piece = "O"
+        self.send(text_data=json.dumps(event))
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)(self.game_group_name, self.channel_name)
