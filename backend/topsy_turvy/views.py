@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from uuid import uuid4
 from .models import Player, Game
+import json
 
-# Create your views here.
 def index(request):
     return HttpResponse("Hey, welcome to the Topsy Turvy game!\n")
 
@@ -13,14 +13,29 @@ def new_player_id(request):
     # Add new player to db
     player = Player(uuid=player_id)
     player.save()
-    # return the uuid generated earlier
-    return HttpResponse(player_id)
+    # return the uuid generated earlier in a stringified JSON object
+    id_payload = {"id" : player_id}
+    return HttpResponse(json.dumps(id_payload))
 
 def new_game_id(request):
-    # Generate new uuid
-    game_id = str(uuid4())
-    # Add new game to the db
-    game = Game(uuid=game_id, player_1=None, player_2=None, winner=None)
-    game.save()
-    # return the uuid from earlier
-    return HttpResponse(game_id)
+    # Look for games that need a player
+    needs_a_player = Game.objects.filter(player_2=None)
+    if len(needs_a_player) != 0:
+        game = needs_a_player[0]
+        player_2_id = json.loads(request.body)["player_id"]
+        player_2 = Player.objects.get(uuid=player_2_id)
+        game.player_2 = player_2
+        game.save()
+        print(len(needs_a_player))
+        return HttpResponse(str(needs_a_player[0]))
+    else:
+        # Generate new uuid
+        game_id = str(uuid4())
+        # Add new game to the db
+        game = Game(uuid=game_id)
+        player_1_id = json.loads(request.body)["player_id"]
+        player_1 = Player.objects.get(uuid=player_1_id)
+        game.player_1 = player_1
+        game.save()
+        # return the uuid from earlier
+        return HttpResponse(str(game))
