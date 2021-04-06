@@ -19,10 +19,8 @@ def new_player_id(request):
     id_payload = {"id" : player_id}
     return HttpResponse(json.dumps(id_payload))
 
-@csrf_exempt
 def new_game_id(request):
     # Look for games that need a player
-    print(request.content_type)
     needs_a_player = Game.objects.filter(player_2=None)
     if len(needs_a_player) != 0:
         game = needs_a_player[0]
@@ -30,8 +28,8 @@ def new_game_id(request):
         player_2 = Player.objects.get(uuid=player_2_id)
         game.player_2 = player_2
         game.save()
-        print(len(needs_a_player))
-        return HttpResponse(str(needs_a_player[0]))
+        game_id_payload = {"id" : str(needs_a_player[0])}
+        return HttpResponse(json.dumps(game_id_payload))
     else:
         # Generate new uuid
         game_id = str(uuid4())
@@ -42,4 +40,5 @@ def new_game_id(request):
         game.player_1 = player_1
         game.save()
         # return the uuid from earlier
-        return HttpResponse(str(game))
+        game_id_payload = {"id" : str(game)}
+        return HttpResponse(json.dumps(game_id_payload))

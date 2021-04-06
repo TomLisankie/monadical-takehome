@@ -13,4 +13,4 @@ class Game(models.Model):
     winner = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
     won = models.BooleanField(default=False)
     def __str__(self):
-        return "Game ID: " + self.uuid + ", Player 1: " + str(self.player_1) + ", Player 2: " + str(self.player_2)
+        return self.uuid

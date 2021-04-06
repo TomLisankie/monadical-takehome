@@ -49,20 +49,20 @@ class Board extends React.Component {
         axios.get("/player/new")
             .then((response) => {
                 this.setState({player_id : response.data.id});
-                console.log(this.state);
-            })
-            .catch((error) => console.log(error));
-        axios(
-            {
-                method: "post",
-                url: "/game/retrieve-id",
-                data: {
-                    "player_id" : this.state.player_id
+                let data = {
+                    player_id : this.state.player_id
                 }
-            })
-            .then((response) => {
-                this.state.game_id = response.data.id;
-                console.log(this.state);
+                let requestData = {
+                    method: "post",
+                    url: "/game/retrieve-id",
+                    data: data,
+                    headers: {"Content-Type" : "application/json"}
+                };
+                axios(requestData)
+                    .then((response) => {
+                        this.setState({game_id : response.data.id});
+                    })
+                    .catch((error) => console.log(error));
             })
             .catch((error) => console.log(error));
     }
