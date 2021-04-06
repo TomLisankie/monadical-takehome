@@ -3,9 +3,11 @@ from django.http import HttpResponse
 from uuid import uuid4
 from .models import Player, Game
 import json
+from django.views.decorators.csrf import csrf_exempt
 
-def index(request):
-    return HttpResponse("Hey, welcome to the Topsy Turvy game!\n")
+# def index(request):
+#     return render(request, "index.html", {})
+#     # return HttpResponse("Hey, welcome to the Topsy Turvy game!\n")
 
 def new_player_id(request):
     # Generate new uuid4
@@ -17,8 +19,10 @@ def new_player_id(request):
     id_payload = {"id" : player_id}
     return HttpResponse(json.dumps(id_payload))
 
+@csrf_exempt
 def new_game_id(request):
     # Look for games that need a player
+    print(request.content_type)
     needs_a_player = Game.objects.filter(player_2=None)
     if len(needs_a_player) != 0:
         game = needs_a_player[0]

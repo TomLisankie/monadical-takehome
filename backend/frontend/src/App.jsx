@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import axios from 'axios';
 
 const BOARD_SIZE = 7;
 
@@ -42,6 +43,28 @@ class Board extends React.Component {
             filled : Array(BOARD_SIZE).fill(false),
             winner : null
         };
+    }
+
+    componentDidMount() {
+        axios.get("/player/new")
+            .then((response) => {
+                this.setState({player_id : response.data.id});
+                console.log(this.state);
+            })
+            .catch((error) => console.log(error));
+        axios(
+            {
+                method: "post",
+                url: "/game/retrieve-id",
+                data: {
+                    "player_id" : this.state.player_id
+                }
+            })
+            .then((response) => {
+                this.state.game_id = response.data.id;
+                console.log(this.state);
+            })
+            .catch((error) => console.log(error));
     }
 
     renderPieceSpace(row, column) {
@@ -184,6 +207,7 @@ class Board extends React.Component {
         if (this.state.filled[row] || this.state.winner) {
             return
         }
+
         let spaces = this.state.spaces.slice();
         let xTurn = this.state.xTurn;
         spaces[row] = this.newRow(row, spaces[row].slice(), side, xTurn ? "X" : "O");
@@ -196,11 +220,12 @@ class Board extends React.Component {
     }
 
     render() {
+
         return (
             <div className="game-board">
                 <h1 className="game-title"> Topsy Turvy </h1>
                 <h2 className="status"> <i>{this.state.xTurn ? "Your turn" : "Other turn"}</i> </h2>
-                <h3> Winner: {this.state.winner ? this.state.winner : ""} </h3>
+                <h3> {this.state.winner ? ("Winner: " + this.state.winner) : ""} </h3>
                 <div className="board-row">
                     {this.renderMoveChoiceButton("left", 0)}
                     {this.renderPieceSpace(0, 0)}
