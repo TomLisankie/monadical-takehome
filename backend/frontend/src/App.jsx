@@ -58,7 +58,7 @@ class Board extends React.Component {
             console.log(event);
             const event_data = JSON.parse(event.data);
             if (event_data["type"] == "game_state_update") {
-                this.setState({spaces : event_data["updated_board"]})
+                this.setState({spaces : event_data["updated_board"], xTurn : event_data["updated_turn"]})
             }
         });
         console.log("WebSocket setup should be complete");
@@ -82,7 +82,7 @@ class Board extends React.Component {
                         let id = response.data.id;
                         let assignedPiece = response.data.piece;
                         this.setUpWebSocket(id);
-                        this.setState({game_id : id, piece : assignedPiece});
+                        this.setState({game_id : id, piece : assignedPiece, xTurn : true});
                     })
                     .catch((error) => console.log(error));
             })
@@ -226,7 +226,7 @@ class Board extends React.Component {
     }
 
     handleClick(side, row) {
-        if (this.state.filled[row] || this.state.winner) {
+        if (this.state.filled[row] || this.state.winner || (this.state.xTurn && this.state.piece == "O") || (!this.state.xTurn && this.state.piece == "X")) {
             return
         }
 
