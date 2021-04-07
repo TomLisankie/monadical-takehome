@@ -45,6 +45,24 @@ class Board extends React.Component {
         };
     }
 
+    setUpWebSocket(game_id) {
+        this.socket = new WebSocket("ws://localhost:8000/game/" + game_id);
+        console.log(this.socket);
+        this.socket.addEventListener("open", (event) => {
+            console.log(JSON.stringify({updated_board : this.state.spaces}));
+            this.socket.send(JSON.stringify({updated_board : this.state.spaces}));
+        });
+        this.socket.addEventListener("message", (event) => {
+            console.log("Event received: ");
+            console.log(event);
+            const event_data = JSON.parse(event.data);
+            if (event_data["type"] == "game_state_update") {
+                this.setState({spaces : event_data["updated_board"]})
+            }
+        });
+        console.log("WebSocket setup should be complete");
+    }
+
     componentDidMount() {
         axios.get("/player/new")
             .then((response) => {
@@ -60,7 +78,9 @@ class Board extends React.Component {
                 };
                 axios(requestData)
                     .then((response) => {
-                        this.setState({game_id : response.data.id});
+                        let id = response.data.id;
+                        this.setUpWebSocket(id);
+                        this.setState({game_id : id});
                     })
                     .catch((error) => console.log(error));
             })
@@ -217,6 +237,7 @@ class Board extends React.Component {
                 xTurn : !xTurn,
                 winner : this.checkForWin(spaces)
             });
+        this.socket.send(JSON.stringify({updated_board : spaces}));
     }
 
     render() {
