@@ -2,11 +2,12 @@ import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from .game_logic import check_for_win
+from .models import Game, Player
 
 class GameConsumer(WebsocketConsumer):
     board = None
     turn = False
-    player_id = None
+    player = None
     piece = None
     won = False
     game_id = None
@@ -21,20 +22,23 @@ class GameConsumer(WebsocketConsumer):
 
     def handle_possible_win(self):
         if check_for_win(self.board.copy()):
+            print("~~~~~~~~~~~~~A player has won~~~~~~~~~~~~~~~")
             current_game = Game.objects.get(uuid=self.game_id)
             current_game.won = True
-            current_game.winner = self.player_id
+            current_game.winner = self.player
             async_to_sync(self.channel_layer.group_send)(
                 self.game_group_name,
                 {
                     "type" : "game_won",
-                    "winner" : str(player_id)
+                    "winner" : str(self.player)
                 }
             )
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         print(text_data_json)
+        if "player_id" in text_data_json:
+            self.player = Player.objects.get(uuid=text_data_json["player_id"])
 
         self.board = text_data_json["updated_board"]
         async_to_sync(self.channel_layer.group_send)(
@@ -51,6 +55,10 @@ class GameConsumer(WebsocketConsumer):
     def game_state_update(self, event):
         self.board = event["updated_board"]
         self.turn = event["updated_turn"]
+        self.send(text_data=json.dumps(event))
+
+    def game_won(self, event):
+        self.won = True
         self.send(text_data=json.dumps(event))
 
     def disconnect(self, close_code):

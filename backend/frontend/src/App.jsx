@@ -51,14 +51,17 @@ class Board extends React.Component {
         console.log(this.socket);
         this.socket.addEventListener("open", (event) => {
             console.log(JSON.stringify({updated_board : this.state.spaces}));
-            this.socket.send(JSON.stringify({updated_board : this.state.spaces}));
+            this.socket.send(JSON.stringify({updated_board : this.state.spaces, player_id : this.state.player_id}));
         });
         this.socket.addEventListener("message", (event) => {
             console.log("Event received: ");
             console.log(event);
             const event_data = JSON.parse(event.data);
-            if (event_data["type"] == "game_state_update") {
+            if (event_data["type"] === "game_state_update") {
                 this.setState({spaces : event_data["updated_board"], xTurn : event_data["updated_turn"]})
+            } else if (event_data["type"] === "game_won") {
+                let winner_id = event_data["winner"];
+                this.setState({winner : winner_id});
             }
         });
         console.log("WebSocket setup should be complete");
@@ -152,8 +155,7 @@ class Board extends React.Component {
         this.setState(
             {
                 spaces : spaces,
-                xTurn : !xTurn,
-                winner : this.checkForWin(spaces)
+                xTurn : !xTurn
             });
         this.socket.send(JSON.stringify({updated_board : spaces}));
     }
@@ -164,7 +166,8 @@ class Board extends React.Component {
             <div className="game-board">
                 <h1 className="game-title"> Topsy Turvy </h1>
                 <h2 className="status"> <i>{this.state.xTurn ? "Your turn" : "Other turn"}</i> </h2>
-                <h3> {this.state.winner ? ("Winner: " + this.state.winner) : ""} </h3>
+                <h3> { (this.state.winner !== null) && (this.state.winner === this.state.player_id) ? "You won!!!" : ""} </h3>
+                <h3> {(this.state.winner !== null) && this.state.winner !== this.state.player_id ? "Sorry, you lost." : ""} </h3>
                 <div className="board-row">
                     {this.renderMoveChoiceButton("left", 0)}
                     {this.renderPieceSpace(0, 0)}
