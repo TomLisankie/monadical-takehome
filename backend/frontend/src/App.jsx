@@ -39,6 +39,7 @@ class Board extends React.Component {
         }
         this.state = {
             spaces : spaces,
+            piece : null,
             xTurn : true,
             filled : Array(BOARD_SIZE).fill(false),
             winner : null
@@ -79,8 +80,9 @@ class Board extends React.Component {
                 axios(requestData)
                     .then((response) => {
                         let id = response.data.id;
+                        let assignedPiece = response.data.piece;
                         this.setUpWebSocket(id);
-                        this.setState({game_id : id});
+                        this.setState({game_id : id, piece : assignedPiece});
                     })
                     .catch((error) => console.log(error));
             })
@@ -230,7 +232,7 @@ class Board extends React.Component {
 
         let spaces = this.state.spaces.slice();
         let xTurn = this.state.xTurn;
-        spaces[row] = this.newRow(row, spaces[row].slice(), side, xTurn ? "X" : "O");
+        spaces[row] = this.newRow(row, spaces[row].slice(), side, this.state.piece);
         this.setState(
             {
                 spaces : spaces,

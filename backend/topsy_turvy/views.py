@@ -28,7 +28,7 @@ def new_game_id(request):
         player_2 = Player.objects.get(uuid=player_2_id)
         game.player_2 = player_2
         game.save()
-        game_id_payload = {"id" : str(needs_a_player[0])}
+        game_id_payload = {"id" : str(needs_a_player[0]), "piece" : "O"}
         return HttpResponse(json.dumps(game_id_payload))
     else:
         # Generate new uuid
@@ -40,5 +40,5 @@ def new_game_id(request):
         game.player_1 = player_1
         game.save()
         # return the uuid from earlier
-        game_id_payload = {"id" : str(game)}
+        game_id_payload = {"id" : str(game), "piece" : "X"}
         return HttpResponse(json.dumps(game_id_payload))
