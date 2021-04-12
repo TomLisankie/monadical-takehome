@@ -77,7 +77,7 @@ class Board extends React.Component {
     }
 
     renderMoveChoiceButton(side, row) {
-        return <MoveChoiceButton side={side} row={row} onClick={() => this.handleClick(side, row)} />;
+        return <MoveChoiceButton side={side} row={row} onClick={() => this.handleMoveButtonClick(side, row)} />;
     }
 
     updateRow(row, rowArray, side, playerLetter) {
@@ -124,7 +124,7 @@ class Board extends React.Component {
         return newRow;
     }
 
-    handleClick(side, row) {
+    handleMoveButtonClick(side, row) {
         if (this.state.filled[row] || this.state.winner || (this.state.xTurn && this.state.piece == "O") || (!this.state.xTurn && this.state.piece == "X")) {
             return
         }
