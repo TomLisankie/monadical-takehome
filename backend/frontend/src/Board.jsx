@@ -44,7 +44,6 @@ class Board extends React.Component {
                 this.setState({winner : winner_id});
             }
         });
-        console.log("WebSocket setup should be complete");
     }
 
     componentDidMount() {

@@ -1,4 +1,4 @@
-.App {
+.Board {
     text-align: center;
     background-color: #ebfaff;
     color: #96532d;
@@ -70,4 +70,30 @@
     clear : both;
     content : "";
     display : table;
+}
+
+.log-in-sign-up-input:after {
+    clear : both;
+    content : "";
+    display : table;
+}
+
+.homepage {
+    text-align: center;
+}
+
+html {
+    background-color: #ebfaff;
+}
+
+.sign-up-log-in-content {
+    display: flex;
+}
+
+.sign-up-area {
+    flex: 50%;
+}
+
+.log-in-area {
+    flex: 50%;
 }

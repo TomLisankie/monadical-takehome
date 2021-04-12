@@ -2,14 +2,25 @@ import './App.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Board from './Board';
+import SignUpLogIn from './SignUpLogIn';
+import {BrowserRouter as Router,
+        Switch,
+        Route,} from "react-router-dom";
 
 function App() {
     return (
-        <div className="App">
-            <div className="App-content">
-                <Board />
-            </div>
-        </div>
+            <Router>
+                <Switch>
+                    <Route path="/game">
+                        <div className="Board">
+                            <Board />
+                        </div>
+                    </Route>
+                    <Route path="/">
+                        <SignUpLogIn />
+                    </Route>
+                </Switch>
+            </Router>
     );
 }
 
