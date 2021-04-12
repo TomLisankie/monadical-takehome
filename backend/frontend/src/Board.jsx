@@ -141,89 +141,26 @@ class Board extends React.Component {
     }
 
     render() {
-
         return (
             <div className="game-board">
                 <h1 className="game-title"> Topsy Turvy </h1>
                 <h2 className="status"> <i>{this.state.xTurn ? "Your turn" : "Other turn"}</i> </h2>
                 <h3> { (this.state.winner !== null) && (this.state.winner === this.state.player_id) ? "You won!!!" : ""} </h3>
                 <h3> {(this.state.winner !== null) && this.state.winner !== this.state.player_id ? "Sorry, you lost." : ""} </h3>
-                <div className="board-row">
-                    {this.renderMoveChoiceButton("left", 0)}
-                    {this.renderPieceSpace(0, 0)}
-                    {this.renderPieceSpace(0, 1)}
-                    {this.renderPieceSpace(0, 2)}
-                    {this.renderPieceSpace(0, 3)}
-                    {this.renderPieceSpace(0, 4)}
-                    {this.renderPieceSpace(0, 5)}
-                    {this.renderPieceSpace(0, 6)}
-                    {this.renderMoveChoiceButton("right", 0)}
-                </div>
-                <div className="board-row">
-                    {this.renderMoveChoiceButton("left", 1)}
-                    {this.renderPieceSpace(1, 0)}
-                    {this.renderPieceSpace(1, 1)}
-                    {this.renderPieceSpace(1, 2)}
-                    {this.renderPieceSpace(1, 3)}
-                    {this.renderPieceSpace(1, 4)}
-                    {this.renderPieceSpace(1, 5)}
-                    {this.renderPieceSpace(1, 6)}
-                    {this.renderMoveChoiceButton("right", 1)}
-                </div>
-                <div className="board-row">
-                    {this.renderMoveChoiceButton("left", 2)}
-                    {this.renderPieceSpace(2, 0)}
-                    {this.renderPieceSpace(2, 1)}
-                    {this.renderPieceSpace(2, 2)}
-                    {this.renderPieceSpace(2, 3)}
-                    {this.renderPieceSpace(2, 4)}
-                    {this.renderPieceSpace(2, 5)}
-                    {this.renderPieceSpace(2, 6)}
-                    {this.renderMoveChoiceButton("right", 2)}
-                </div>
-                <div className="board-row">
-                    {this.renderMoveChoiceButton("left", 3)}
-                    {this.renderPieceSpace(3, 0)}
-                    {this.renderPieceSpace(3, 1)}
-                    {this.renderPieceSpace(3, 2)}
-                    {this.renderPieceSpace(3, 3)}
-                    {this.renderPieceSpace(3, 4)}
-                    {this.renderPieceSpace(3, 5)}
-                    {this.renderPieceSpace(3, 6)}
-                    {this.renderMoveChoiceButton("right", 3)}
-                </div>
-                <div className="board-row">
-                    {this.renderMoveChoiceButton("left", 4)}
-                    {this.renderPieceSpace(4, 0)}
-                    {this.renderPieceSpace(4, 1)}
-                    {this.renderPieceSpace(4, 2)}
-                    {this.renderPieceSpace(4, 3)}
-                    {this.renderPieceSpace(4, 4)}
-                    {this.renderPieceSpace(4, 5)}
-                    {this.renderPieceSpace(4, 6)}
-                    {this.renderMoveChoiceButton("right", 4)}
-                </div>
-                <div className="board-row">
-                    {this.renderMoveChoiceButton("left", 5)}
-                    {this.renderPieceSpace(5, 0)}
-                    {this.renderPieceSpace(5, 1)}
-                    {this.renderPieceSpace(5, 2)}
-                    {this.renderPieceSpace(5, 3)}
-                    {this.renderPieceSpace(5, 4)}
-                    {this.renderPieceSpace(5, 5)}
-                    {this.renderPieceSpace(5, 6)}
-                    {this.renderMoveChoiceButton("right", 5)}
-                </div>
-                <div className="board-row">
-                    {this.renderMoveChoiceButton("left", 6)}
-                    {this.renderPieceSpace(6, 0)}
-                    {this.renderPieceSpace(6, 1)}
-                    {this.renderPieceSpace(6, 2)}
-                    {this.renderPieceSpace(6, 3)}
-                    {this.renderPieceSpace(6, 4)}
-                    {this.renderPieceSpace(6, 5)}
-                    {this.renderPieceSpace(6, 6)}
-                    {this.renderMoveChoiceButton("right", 6)}
+                <div className="rows">
+                    {[...Array(BOARD_SIZE).keys()]
+                     .map(i =>
+                         {
+                             return <div className="board-row">
+                                        {this.renderMoveChoiceButton("left", i)}
+                                        {[...Array(BOARD_SIZE).keys()]
+                                         .map(j =>
+                                             {
+                                                 return this.renderPieceSpace(i, j);
+                                             })}
+                                        {this.renderMoveChoiceButton("right", i)}
+                                    </div>;
+                         })}
                 </div>
             </div>
         );
