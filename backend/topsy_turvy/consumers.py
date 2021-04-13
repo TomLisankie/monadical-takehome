@@ -23,6 +23,7 @@ class GameConsumer(WebsocketConsumer):
     piece = None
     won = False
     game_id = None
+    solo = False
 
     def connect(self):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
@@ -37,14 +38,15 @@ class GameConsumer(WebsocketConsumer):
             print("~~~~~~~~~~~~~A player has won~~~~~~~~~~~~~~~")
             current_game = Game.objects.get(uuid=self.game_id)
             current_game.won = True
-            current_game.winner = self.player
-            self.player.wins += 1;
+            if not self.solo:
+                current_game.winner = self.player
+                self.player.wins += 1;
             self.player.save()
             async_to_sync(self.channel_layer.group_send)(
                 self.game_group_name,
                 {
                     "type" : "game_won",
-                    "winner" : str(self.player)
+                    "winner" : str(current_game.winner)
                 }
             )
             return True
@@ -79,42 +81,49 @@ class GameConsumer(WebsocketConsumer):
                     piece = row_list.pop(i)
                     new_row.insert(0, piece)
         self.board[row] = new_row
+        self.handle_possible_win()
 
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         if "perma_cookie" in text_data_json:
             self.player = Player.objects.get(perma_cookie=text_data_json["perma_cookie"])
+            self.solo = text_data_json["solo"]
 
         self.board = text_data_json["updated_board"]
 
-        # async_to_sync(self.channel_layer.group_send)(
-        #     self.game_group_name,
-        #     {
-        #         "type" : "game_state_update",
-        #         "updated_board" : self.board,
-        #         "updated_turn" : not self.turn
-        #     }
-        # )
-
-        if not self.handle_possible_win():
-            # if there wasn't a win, the bot will make a move
-            side = random_side()
-            row = random_row()
-            self.update_board_with_random_move_by_bot(side, row)
+        if self.solo:
+            if not self.handle_possible_win():
+                # if there wasn't a win, the bot will make a move
+                side = random_side()
+                row = random_row()
+                self.update_board_with_random_move_by_bot(side, row)
+                async_to_sync(self.channel_layer.group_send)(
+                    self.game_group_name,
+                    {
+                        "type" : "game_state_update",
+                        "sender_channel_name" : self.channel_name,
+                        "updated_board" : self.board,
+                        "updated_turn" : not self.turn
+                    }
+                )
+            else:
+                print("No winner yet")
+        else:
             async_to_sync(self.channel_layer.group_send)(
                 self.game_group_name,
                 {
                     "type" : "game_state_update",
-                    "sender_channel_name" : self.channel_name,
                     "updated_board" : self.board,
                     "updated_turn" : not self.turn
                 }
             )
+            self.handle_possible_win()
 
     def game_state_update(self, event):
         self.board = event["updated_board"]
-        # self.turn = event["updated_turn"]
+        if not self.solo:
+            self.turn = event["updated_turn"]
         self.send(text_data=json.dumps(event))
         # if self.channel_name != event["sender_channel_name"]:
 

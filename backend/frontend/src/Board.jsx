@@ -23,7 +23,7 @@ class Board extends React.Component {
             xTurn : true,
             filled : Array(BOARD_SIZE).fill(false),
             winner : null,
-            solo : props.solo
+            solo : (props.solo ? props.solo : false)
         };
     }
 
@@ -32,7 +32,7 @@ class Board extends React.Component {
         console.log(this.socket);
         this.socket.addEventListener("open", (event) => {
             console.log(JSON.stringify({updated_board : this.state.spaces}));
-            this.socket.send(JSON.stringify({updated_board : this.state.spaces, perma_cookie : sessionStorage.perma_cookie}));
+            this.socket.send(JSON.stringify({updated_board : this.state.spaces, perma_cookie : sessionStorage.perma_cookie, solo : this.state.solo}));
         });
         this.socket.addEventListener("message", (event) => {
             console.log("Event received: ");
@@ -51,7 +51,7 @@ class Board extends React.Component {
         let userInfoRequestData = {
             method: "post",
             url: "/api/player/get-info",
-            data: {"perma_cookie" : sessionStorage.perma_cookie, "solo" : this.state.solo},
+            data: {"perma_cookie" : sessionStorage.perma_cookie},
             headers: {"Content-Type" : "application/json"}
         };
         axios(userInfoRequestData).then((response) => {
