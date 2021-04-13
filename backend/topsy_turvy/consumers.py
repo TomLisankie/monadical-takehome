@@ -26,6 +26,8 @@ class GameConsumer(WebsocketConsumer):
             current_game = Game.objects.get(uuid=self.game_id)
             current_game.won = True
             current_game.winner = self.player
+            self.player.wins += 1;
+            self.player.save()
             async_to_sync(self.channel_layer.group_send)(
                 self.game_group_name,
                 {
@@ -37,8 +39,8 @@ class GameConsumer(WebsocketConsumer):
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         print(text_data_json)
-        if "player_id" in text_data_json:
-            self.player = Player.objects.get(uuid=text_data_json["player_id"])
+        if "perma_cookie" in text_data_json:
+            self.player = Player.objects.get(perma_cookie=text_data_json["perma_cookie"])
 
         self.board = text_data_json["updated_board"]
         async_to_sync(self.channel_layer.group_send)(
