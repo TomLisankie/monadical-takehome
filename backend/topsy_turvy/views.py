@@ -4,6 +4,7 @@ from uuid import uuid4
 from .models import Player, Game
 import json
 from django.views.decorators.csrf import csrf_exempt
+import hashlib
 
 # def index(request):
 #     return render(request, "index.html", {})
@@ -14,7 +15,8 @@ def new_player(request):
     player = Player()
     player.username = json.loads(request.body)["username"]
     player.email = json.loads(request.body)["email"]
-    player.password = json.loads(request.body)["password"]
+    player_password_plain_text = json.loads(request.body)["password"]
+    player.password = hashlib.md5(player_password_plain_text.encode()).hexdigest()
     # Give that player a perma-cookie
     player.perma_cookie = str(uuid4())
     player.save()
@@ -24,7 +26,8 @@ def new_player(request):
 
 def log_in_player(request):
     player_username = json.loads(request.body)["username"]
-    player_password = json.loads(request.body)["password"]
+    player_password_plain_text = json.loads(request.body)["password"]
+    player_password = hashlib.md5(player_password_plain_text.encode()).hexdigest()
     try:
         player = Player.objects.get(username=player_username)
         if player.password == player_password:
