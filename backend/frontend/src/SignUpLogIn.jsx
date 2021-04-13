@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './App.css';
+import axios from 'axios';
 
 class SignUp extends React.Component {
     constructor(props) {
@@ -12,6 +13,18 @@ class SignUp extends React.Component {
 
     handleSignUpSubmit(event) {
         event.preventDefault();
+
+        let requestData = {
+            method: "post",
+            url: "/api/player/sign-up",
+            data: this.state,
+            headers: {"Content-Type" : "application/json"}
+        };
+        axios(requestData).then((response) => {
+            let permaCookie = response.data.perma_cookie;
+            sessionStorage.setItem("perma_cookie", permaCookie);
+            window.location.href = "http://localhost:3000/dashboard";
+        })
         console.log(this.state);
     }
 

@@ -47,26 +47,18 @@ class Board extends React.Component {
     }
 
     componentDidMount() {
-        axios.get("/player/new")
+        let requestData = {
+            method: "post",
+            url: "/api/game/retrieve-id",
+            data: {"perma_cookie" : sessionStorage.perma_cookie},
+            headers: {"Content-Type" : "application/json"}
+        };
+        axios(requestData)
             .then((response) => {
-                this.setState({player_id : response.data.id});
-                let data = {
-                    player_id : this.state.player_id
-                }
-                let requestData = {
-                    method: "post",
-                    url: "/game/retrieve-id",
-                    data: data,
-                    headers: {"Content-Type" : "application/json"}
-                };
-                axios(requestData)
-                    .then((response) => {
-                        let id = response.data.id;
-                        let assignedPiece = response.data.piece;
-                        this.setUpWebSocket(id);
-                        this.setState({game_id : id, piece : assignedPiece, xTurn : true});
-                    })
-                    .catch((error) => console.log(error));
+                let id = response.data.id;
+                let assignedPiece = response.data.piece;
+                this.setUpWebSocket(id);
+                this.setState({game_id : id, piece : assignedPiece, xTurn : true});
             })
             .catch((error) => console.log(error));
     }

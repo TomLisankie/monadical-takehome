@@ -9,7 +9,20 @@ from django.views.decorators.csrf import csrf_exempt
 #     return render(request, "index.html", {})
 #     # return HttpResponse("Hey, welcome to the Topsy Turvy game!\n")
 
-def new_player_id(request):
+def new_player(request):
+    # Make a new player
+    player = Player()
+    player.username = json.loads(request.body)["username"]
+    player.email = json.loads(request.body)["email"]
+    player.password = json.loads(request.body)["password"]
+    # Give that player a perma-cookie
+    player.perma_cookie = str(uuid4())
+    player.save()
+    # return the uuid generated earlier in a stringified JSON object
+    perma_cookie_payload = {"perma_cookie" : player.perma_cookie}
+    return HttpResponse(json.dumps(perma_cookie_payload))
+
+def log_in_player(request):
     # Generate new uuid4
     player_id = str(uuid4())
     # Add new player to db
@@ -19,13 +32,23 @@ def new_player_id(request):
     id_payload = {"id" : player_id}
     return HttpResponse(json.dumps(id_payload))
 
+def get_player_info(request):
+    included_perma_cookie = json.loads(request.body)["perma_cookie"]
+    player = Player.objects.get(perma_cookie=included_perma_cookie)
+    player_payload = {
+        "username" : player.username,
+        "email" : player.email,
+        "wins" : player.wins
+    }
+    return HttpResponse(json.dumps(player_payload))
+
 def new_game_id(request):
     # Look for games that need a player
     needs_a_player = Game.objects.filter(player_2=None)
     if len(needs_a_player) != 0:
         game = needs_a_player[0]
-        player_2_id = json.loads(request.body)["player_id"]
-        player_2 = Player.objects.get(uuid=player_2_id)
+        player_2_perma_cookie = json.loads(request.body)["perma_cookie"]
+        player_2 = Player.objects.get(perma_cookie=player_2_perma_cookie)
         game.player_2 = player_2
         game.save()
         game_id_payload = {"id" : str(needs_a_player[0]), "piece" : "O"}
@@ -35,8 +58,8 @@ def new_game_id(request):
         game_id = str(uuid4())
         # Add new game to the db
         game = Game(uuid=game_id)
-        player_1_id = json.loads(request.body)["player_id"]
-        player_1 = Player.objects.get(uuid=player_1_id)
+        player_1_perma_cookie = json.loads(request.body)["perma_cookie"]
+        player_1 = Player.objects.get(perma_cookie=player_1_perma_cookie)
         game.player_1 = player_1
         game.save()
         # return the uuid from earlier

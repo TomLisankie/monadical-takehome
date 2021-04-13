@@ -97,3 +97,15 @@ html {
 .log-in-area {
     flex: 50%;
 }
+
+.dashboard {
+    text-align: center;
+}
+
+.dashboard-options {
+    display: flex;
+}
+
+.dashboard-option {
+    flex: 33.3%;
+}

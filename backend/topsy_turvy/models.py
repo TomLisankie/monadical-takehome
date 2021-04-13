@@ -1,10 +1,11 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-class Player(models.Model):
-    uuid = models.CharField(max_length=36, unique=True, primary_key=True)
+class Player(AbstractUser):
     wins = models.PositiveIntegerField(default=0)
+    perma_cookie = models.CharField(max_length=36, unique=True)
     def __str__(self):
-        return self.uuid
+        return self.username
 
 class Game(models.Model):
     uuid = models.CharField(max_length=36, unique=True, primary_key=True)
