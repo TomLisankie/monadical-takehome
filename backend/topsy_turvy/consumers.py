@@ -38,7 +38,6 @@ class GameConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        print(text_data_json)
         if "perma_cookie" in text_data_json:
             self.player = Player.objects.get(perma_cookie=text_data_json["perma_cookie"])
 
