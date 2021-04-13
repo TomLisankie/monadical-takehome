@@ -61,6 +61,21 @@ class LogIn extends React.Component {
 
     handleLogInSubmit(event) {
         event.preventDefault();
+        let requestData = {
+            method: "post",
+            url: "/api/player/log-in",
+            data: this.state,
+            headers: {"Content-Type" : "application/json"}
+        };
+        axios(requestData).then((response) => {
+            if (response.data.error !== undefined) {
+                this.setState(response.data);
+            } else {
+                let permaCookie = response.data.perma_cookie;
+                sessionStorage.setItem("perma_cookie", permaCookie);
+                window.location.href = "http://localhost:3000/dashboard";
+            }
+        })
         console.log(this.state);
     }
 
@@ -79,6 +94,7 @@ class LogIn extends React.Component {
                     </label>
                     <input type="submit" value="Log In" />
                 </form>
+                <div style={{color : "red"}}>{this.state.error}</div>
             </div>
         );
     }

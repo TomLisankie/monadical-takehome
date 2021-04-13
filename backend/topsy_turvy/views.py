@@ -23,14 +23,16 @@ def new_player(request):
     return HttpResponse(json.dumps(perma_cookie_payload))
 
 def log_in_player(request):
-    # Generate new uuid4
-    player_id = str(uuid4())
-    # Add new player to db
-    player = Player(uuid=player_id)
-    player.save()
-    # return the uuid generated earlier in a stringified JSON object
-    id_payload = {"id" : player_id}
-    return HttpResponse(json.dumps(id_payload))
+    player_username = json.loads(request.body)["username"]
+    player_password = json.loads(request.body)["password"]
+    try:
+        player = Player.objects.get(username=player_username)
+        if player.password == player_password:
+            return HttpResponse(json.dumps({"perma_cookie" : player.perma_cookie}))
+        else:
+            return HttpResponse(json.dumps({"error" : "Wrong password"}))
+    except:
+        return HttpResponse(json.dumps({"error" : "User doesn't exist"}))
 
 def get_player_info(request):
     included_perma_cookie = json.loads(request.body)["perma_cookie"]
