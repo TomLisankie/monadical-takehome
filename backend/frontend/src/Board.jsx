@@ -48,13 +48,23 @@ class Board extends React.Component {
     }
 
     componentDidMount() {
-        let requestData = {
+        let userInfoRequestData = {
+            method: "post",
+            url: "/api/player/get-info",
+            data: {"perma_cookie" : sessionStorage.perma_cookie, "solo" : this.state.solo},
+            headers: {"Content-Type" : "application/json"}
+        };
+        axios(userInfoRequestData).then((response) => {
+            this.setState({username : response.data.username});
+        });
+
+        let gameRequestData = {
             method: "post",
             url: "/api/game/retrieve-id",
             data: {"perma_cookie" : sessionStorage.perma_cookie, "solo" : this.state.solo},
             headers: {"Content-Type" : "application/json"}
         };
-        axios(requestData)
+        axios(gameRequestData)
             .then((response) => {
                 let id = response.data.id;
                 let assignedPiece = response.data.piece;
@@ -137,8 +147,8 @@ class Board extends React.Component {
             <div className="game-board">
                 <h1 className="game-title"> Topsy Turvy </h1>
                 <h2 className="status"> <i>{this.state.xTurn ? "Your turn" : "Other turn"}</i> </h2>
-                <h3> { (this.state.winner !== null) && (this.state.winner === this.state.player_id) ? "You won!!!" : ""} </h3>
-                <h3> {(this.state.winner !== null) && this.state.winner !== this.state.player_id ? "Sorry, you lost." : ""} </h3>
+                <h3> { (this.state.winner !== null) && (this.state.winner === this.state.username) ? "You won!!!" : ""} </h3>
+                <h3> {(this.state.winner !== null) && this.state.winner !== this.state.username ? "Sorry, you lost." : ""} </h3>
                 <div className="rows">
                     {[...Array(BOARD_SIZE).keys()]
                      .map(i =>

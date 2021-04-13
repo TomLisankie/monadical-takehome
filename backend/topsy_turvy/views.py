@@ -52,12 +52,11 @@ def new_game_id(request):
     needs_a_player = Game.objects.filter(player_2=None)
     request_data = json.loads(request.body)
 
-
     if request_data["solo"]:
         game_id = str(uuid4())
         game = Game(uuid=game_id)
         player_perma_cookie = request_data["perma_cookie"]
-        player = Player.object.get(perma_cookie=player_perma_cookie)
+        player = Player.objects.get(perma_cookie=player_perma_cookie)
         game.player_1 = player
         game.player_2 = player
         game.save()

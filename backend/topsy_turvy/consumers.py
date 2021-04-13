@@ -48,22 +48,38 @@ class GameConsumer(WebsocketConsumer):
                 }
             )
             return True
+        return False
 
-    def update_board_with_random_move_by_bot(side, row):
+    def update_board_with_random_move_by_bot(self, side, row):
         left = True
         right = False
         new_row = ["O"]
         row_list = self.board[row]
         if side == left:
             index_to_leave = 0
-            while row_list[index_to_leave]:
+            while row_list[index_to_leave] != "___":
                 index_to_leave += 1
                 if index_to_leave == BOARD_SIZE:
-                    update_board_with_random_move_by_bot(random_side(), random_row())
+                    self.update_board_with_random_move_by_bot(random_side(), random_row())
+                    return
             for i in range(0, len(row_list)):
                 if i != index_to_leave:
                     new_row.append(row_list[i])
-                else: #juan@monadical.com
+        else:
+            index_to_leave = BOARD_SIZE - 1
+            while row_list[index_to_leave] != "___":
+                index_to_leave -= 1
+                if index_to_leave < 0:
+                    self.update_board_with_random_move_by_bot(random_side(), random_row())
+                    return
+            row_range = list(range(0, BOARD_SIZE))
+            row_range.reverse()
+            for i in row_range:
+                if i != index_to_leave:
+                    piece = row_list.pop(i)
+                    new_row.insert(0, piece)
+        self.board[row] = new_row
+
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -72,28 +88,35 @@ class GameConsumer(WebsocketConsumer):
 
         self.board = text_data_json["updated_board"]
 
-        async_to_sync(self.channel_layer.group_send)(
-            self.game_group_name,
-            {
-                "type" : "game_state_update",
-                "updated_board" : self.board,
-                "updated_turn" : not self.turn
-            }
-        )
+        # async_to_sync(self.channel_layer.group_send)(
+        #     self.game_group_name,
+        #     {
+        #         "type" : "game_state_update",
+        #         "updated_board" : self.board,
+        #         "updated_turn" : not self.turn
+        #     }
+        # )
 
         if not self.handle_possible_win():
-            # add logic for bot
+            # if there wasn't a win, the bot will make a move
             side = random_side()
             row = random_row()
             self.update_board_with_random_move_by_bot(side, row)
-            pass
-        else:
-            # no bot logic
+            async_to_sync(self.channel_layer.group_send)(
+                self.game_group_name,
+                {
+                    "type" : "game_state_update",
+                    "sender_channel_name" : self.channel_name,
+                    "updated_board" : self.board,
+                    "updated_turn" : not self.turn
+                }
+            )
 
     def game_state_update(self, event):
         self.board = event["updated_board"]
-        self.turn = event["updated_turn"]
+        # self.turn = event["updated_turn"]
         self.send(text_data=json.dumps(event))
+        # if self.channel_name != event["sender_channel_name"]:
 
     def game_won(self, event):
         self.won = True
