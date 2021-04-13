@@ -50,9 +50,23 @@ def get_player_info(request):
 def new_game_id(request):
     # Look for games that need a player
     needs_a_player = Game.objects.filter(player_2=None)
+    request_data = json.loads(request.body)
+
+
+    if request_data["solo"]:
+        game_id = str(uuid4())
+        game = Game(uuid=game_id)
+        player_perma_cookie = request_data["perma_cookie"]
+        player = Player.object.get(perma_cookie=player_perma_cookie)
+        game.player_1 = player
+        game.player_2 = player
+        game.save()
+        game_id_payload = {"id" : str(game), "piece" : "X"}
+        return HttpResponse(json.dumps(game_id_payload))
+
     if len(needs_a_player) != 0:
         game = needs_a_player[0]
-        player_2_perma_cookie = json.loads(request.body)["perma_cookie"]
+        player_2_perma_cookie = request_data["perma_cookie"]
         player_2 = Player.objects.get(perma_cookie=player_2_perma_cookie)
         game.player_2 = player_2
         game.save()
@@ -63,7 +77,7 @@ def new_game_id(request):
         game_id = str(uuid4())
         # Add new game to the db
         game = Game(uuid=game_id)
-        player_1_perma_cookie = json.loads(request.body)["perma_cookie"]
+        player_1_perma_cookie = request_data["perma_cookie"]
         player_1 = Player.objects.get(perma_cookie=player_1_perma_cookie)
         game.player_1 = player_1
         game.save()

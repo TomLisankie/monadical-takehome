@@ -24,7 +24,7 @@ class Dashboard extends React.Component {
                         </button>
                     </div>
                     <div className="dashboard-option">
-                        <button>
+                        <button onClick={(e) => window.location.href="http://localhost:3000/solo-game"}>
                             <h1>Play Solo</h1>
                         </button>
                     </div>

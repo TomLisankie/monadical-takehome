@@ -22,7 +22,8 @@ class Board extends React.Component {
             piece : null,
             xTurn : true,
             filled : Array(BOARD_SIZE).fill(false),
-            winner : null
+            winner : null,
+            solo : props.solo
         };
     }
 
@@ -50,7 +51,7 @@ class Board extends React.Component {
         let requestData = {
             method: "post",
             url: "/api/game/retrieve-id",
-            data: {"perma_cookie" : sessionStorage.perma_cookie},
+            data: {"perma_cookie" : sessionStorage.perma_cookie, "solo" : this.state.solo},
             headers: {"Content-Type" : "application/json"}
         };
         axios(requestData)

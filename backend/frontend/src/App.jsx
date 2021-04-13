@@ -12,6 +12,11 @@ function App() {
     return (
             <Router>
                 <Switch>
+                    <Route path="/solo-game">
+                        <div className="Board">
+                            <Board solo={true} />
+                        </div>
+                    </Route>
                     <Route path="/game">
                         <div className="Board">
                             <Board />
